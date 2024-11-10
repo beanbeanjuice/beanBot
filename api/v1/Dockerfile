@@ -1,6 +1,6 @@
-FROM node:22-slim
+FROM node:lts-slim
 WORKDIR /app
-COPY package.json /app
+COPY package*.json ./
 RUN npm install
-COPY . /app
+COPY . .
 CMD ["npm", "start"]
