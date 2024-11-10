@@ -4,14 +4,11 @@ on:
     push:
         branches:
             - 'integration'
-            - 'integration-v4'
+            - 'v4-integration'
 
 jobs:
     docker:
         runs-on: ubuntu-latest
-        defaults:
-            run:
-                working-directory: ./api/v1
         steps:
             -
                 name: Set up QEMU
@@ -32,5 +29,6 @@ jobs:
                 name: Build and push
                 uses: docker/build-push-action@v6
                 with:
+                    context: ./api/v1
                     push: true
                     tags: beanbeanjuice/cafe-api:beta
