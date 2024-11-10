@@ -5,48 +5,6 @@ const getConnection = require('./modules/mysql-connection');
 const check_authentication = require('../../middleware/check-auth');
 const check_admin = require('../../middleware/check-admin.js');
 
-// const check_if_user_exists = (request, response, next) => {
-//     const user_id = request.params.user_id;
-//
-//     const query = "SELECT * FROM beancoin_donation_users WHERE user_id = (?);";
-//     getConnection().query(query, [user_id], (error, rows, fields) => {
-//         if (error) {
-//             next(error);
-//             return;
-//         }
-//
-//         if (!rows.length) {
-//             const user_error = new Error("Donation User (" + user_id + ") Does Not Exist");
-//             user_error.status = 404;
-//             next(user_error);
-//             return;
-//         }
-//
-//         next();
-//     });
-// }
-//
-// const check_if_user_does_not_exist = (request, response, next) => {
-//     user_id = request.params.user_id;
-//
-//     query = "SELECT * FROM beancoin_donation_users WHERE user_id = (?);";
-//     getConnection().query(query, [user_id], (error, rows, fields) => {
-//         if (error) {
-//             next(new Error(error));
-//             return;
-//         }
-//
-//         if (!!rows.length) {
-//             const user_error = new Error("User (" + user_id + ") Already Exists");
-//             user_error.status = 409;
-//             next(user_error);
-//             return;
-//         }
-//
-//         next();
-//     });
-// }
-
 // Gets beanCoin donation users.
 router.get("/beanCoin/donation_users", check_authentication, check_admin, (request, response, next) => {
     const query = "SELECT * FROM beancoin_donation_users;";
@@ -113,6 +71,7 @@ router.post("/beanCoin/donation_users/:user_id", check_authentication, check_adm
     const query = "INSERT INTO beancoin_donation_users (user_id, time_until_next_donation) VALUES (?,?);";
     getConnection().query(query, [user_id, time_stamp], (error, rows, fields) => {
         if (error) {
+            if (error.code === "ER_DUP_ENTRY") response.status(409).json({message: `User (${user_id}) already exists.`});
             next(error);
             return;
         }

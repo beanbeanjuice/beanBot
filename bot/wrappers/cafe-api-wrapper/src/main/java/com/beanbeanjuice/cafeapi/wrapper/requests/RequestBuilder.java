@@ -7,6 +7,7 @@ import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.net.URIBuilder;
 import org.jetbrains.annotations.Nullable;
@@ -122,7 +123,8 @@ public class RequestBuilder {
     }
 
     private HttpResponse get(final SimpleHttpRequest request) throws ExecutionException, InterruptedException, IOException {
-        request.addHeader("Authorization", apiKey);
+        request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey);
+        request.addHeader(HttpHeaders.CONTENT_TYPE, "application/json");
 
         CloseableHttpAsyncClient client = HttpAsyncClients.custom().build();
         client.start();

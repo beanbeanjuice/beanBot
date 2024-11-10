@@ -136,7 +136,7 @@ public class CafeAPI {
                 .addParameter("password", password)
                 .build();
 
-        return request.getData().get("api_key").textValue();
+        return request.getData().get("access_token").textValue();
     }
 
 }

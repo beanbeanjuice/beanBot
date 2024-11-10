@@ -87,15 +87,16 @@ router.get("/birthdays/:user_id", check_authentication, check_admin, check_if_us
 // Updates a user's birthday.
 router.patch("/birthdays/:user_id", check_authentication, check_admin, check_if_user_exists, (request, response, next) => {
     user_id = request.params.user_id;
-    birthday = request.query.birthday;
-    time_zone = request.query.time_zone
+    birth_date = request.query.birth_date;
+    time_zone = request.query.time_zone;
 
     // TODO: Somehow add time_zone as well to this.
-    if (!birthday) {
+    if (!birth_date) {
         response.status(400).json({
             variables: {
                 user_id: user_id,
-                birthday: birthday || "undefined"
+                birth_date: birth_date || "undefined",
+                time_zone: time_zone || "undefined"
             },
             message: "A Variable is Undefined"
         });
