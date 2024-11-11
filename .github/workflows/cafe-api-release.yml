@@ -28,6 +28,6 @@ jobs:
                 name: Build and push
                 uses: docker/build-push-action@v6
                 with:
-                    context: ./api/v1
+                    context: "{{defaultContext}}:api/v1"
                     push: true
                     tags: beanbeanjuice/cafe-api:beta
