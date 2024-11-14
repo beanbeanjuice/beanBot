@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const RELEASE_TYPE = process.env.API_REQUEST_LOCATION;
 
 if (RELEASE_TYPE === undefined) {

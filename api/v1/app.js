@@ -1,7 +1,3 @@
-// - [ ] Changed Port
-// - [ ] Changed MySQL Info and Port
-// - [ ] Changed Token
-
 // Load Our App Server Using Express
 const express = require('express');
 const app = express();
@@ -105,5 +101,5 @@ app.use((error, request, response, next) => {
 
 // Ping @ localhost:5101
 app.listen(server_port, () => {
-    console.log("Server is up on " + checkType.RELEASE_TYPE + " and listening on port: " + server_port);
+    console.log(`Server is up on ${checkType.RELEASE_TYPE} and listening on port: ${server_port}.`);
 });
