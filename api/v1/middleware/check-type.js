@@ -9,7 +9,7 @@ const TOKEN = process.env.JWT_TOKEN;
 function getMySQLData() {
   return {
     "url": process.env.MYSQL_URL,
-    "port": process.env.MYSQL_PORT,
+    "port": process.env.MYSQL_PORT || 3306,
     "user": process.env.MYSQL_USER,
     "password": process.env.MYSQL_PASSWORD
   }
