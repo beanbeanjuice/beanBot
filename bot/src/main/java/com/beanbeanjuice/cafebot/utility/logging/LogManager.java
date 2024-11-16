@@ -7,7 +7,9 @@ import com.beanbeanjuice.cafebot.utility.webhook.Webhook;
 import com.beanbeanjuice.cafeapi.wrapper.utility.Time;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,6 +44,11 @@ public class LogManager {
      */
     public LogManager(CafeBot cafeBot, String name, String guildID, String logChannelID, String filePath) {
         this.cafeBot = cafeBot;
+
+        // Set log level for everything.
+        Optional<String> logLevelString = Optional.ofNullable(System.getenv("CAFEBOT_LOG_LEVEL"));
+        Level level = logLevelString.map(Level::valueOf).orElse(Level.INFO);
+        Configurator.setAllLevels(org.apache.logging.log4j.LogManager.getRootLogger().getName(), level);
 
         time = new Time();
 

@@ -1,6 +1,6 @@
 package com.beanbeanjuice.cafebot.utility.logging;
 
-import org.jetbrains.annotations.NotNull;
+import lombok.Getter;
 
 import java.awt.*;
 
@@ -9,6 +9,7 @@ import java.awt.*;
  *
  * @author beanbeanjuice
  */
+@Getter
 public enum LogLevel {
 
     DEBUG(Color.blue, "TEST", "TEST", "https://cdn.beanbeanjuice.com/images/cafeBot/log_level/debug.png"),
@@ -37,40 +38,9 @@ public enum LogLevel {
     }
 
     /**
-     * @return The color to be displayed in the {@link net.dv8tion.jda.api.entities.MessageEmbed MessageEmbed}.
-     */
-    public Color getColor() {
-        return color;
-    }
-
-    /**
-     * @return The code for the {@link LogLevel}.
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * @return The image URL for the {@link LogLevel}.
-     */
-    public String getImageURL() {
-        return imageURL;
-    }
-
-    /**
-     * Gets the default code for the {@link LogLevel} chosen.
-     * @return The code in its unedited, default state.
-     */
-    @NotNull
-    public String getCode() {
-        return code;
-    }
-
-    /**
      * Gets the formatted code for the {@link LogLevel} chosen.
      * @return The code in its formatted state.
      */
-    @NotNull
     public String formatCode() {
         return code + (".").repeat(Math.max(0, 10 - code.length()));
     }

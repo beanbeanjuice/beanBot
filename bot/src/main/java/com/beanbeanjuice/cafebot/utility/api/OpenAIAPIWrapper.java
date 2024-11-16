@@ -1,15 +1,12 @@
 package com.beanbeanjuice.cafebot.utility.api;
 
-import com.beanbeanjuice.cafeapi.wrapper.requests.Request;
 import com.beanbeanjuice.cafebot.CafeBot;
-import com.beanbeanjuice.cafebot.utility.listeners.ai.AIResponseListener;
 import com.beanbeanjuice.cafebot.utility.listeners.ai.PreviousMessage;
+import com.beanbeanjuice.cafebot.utility.logging.LogLevel;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import lombok.RequiredArgsConstructor;
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.async.methods.SimpleHttpResponse;
@@ -19,7 +16,6 @@ import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.Method;
-import org.apache.hc.core5.net.URIAuthority;
 import org.apache.hc.core5.net.URIBuilder;
 
 import java.io.IOException;
@@ -34,6 +30,7 @@ import java.util.concurrent.Future;
 @RequiredArgsConstructor
 public class OpenAIAPIWrapper {
 
+    private final CafeBot bot;
     private final String authorizationKey;
     private final String assistantID;
     private final Map<String, Map<String, Queue<PreviousMessage>>> previousMessageMap;
@@ -54,8 +51,6 @@ public class OpenAIAPIWrapper {
 
     private CompletableFuture<String> getThread(final String guildID) throws URISyntaxException {
         if (aiThreads.containsKey(guildID)) return CompletableFuture.supplyAsync(() -> aiThreads.get(guildID));
-
-        System.out.println("Thread not found, creating.");
 
         return createThread().thenApplyAsync((threadID) -> {
             aiThreads.put(guildID, threadID);
@@ -84,7 +79,10 @@ public class OpenAIAPIWrapper {
                 throw new RuntimeException(e);
             }
 
-            return body.get("id").asText();
+            String newThreadID = body.get("id").asText();
+            bot.getLogger().log(OpenAIAPIWrapper.class, LogLevel.DEBUG, "Created AI Thread: " + newThreadID, true, false);
+
+            return newThreadID;
         });
     }
 
@@ -119,9 +117,11 @@ public class OpenAIAPIWrapper {
 
         return CompletableFuture.supplyAsync(() -> {
             SimpleHttpResponse httpResponse = null;
+
             try {
                 httpResponse = (SimpleHttpResponse) this.get(httpRequest);
             } catch (Exception e) {
+                bot.getLogger().log(OpenAIAPIWrapper.class, LogLevel.WARN, "Error getting response from run.");
                 throw new RuntimeException(e);
             }
 
@@ -131,10 +131,14 @@ public class OpenAIAPIWrapper {
             try {
                 body = new ObjectMapper().readTree(bodyBytes);
             } catch (IOException e) {
+                bot.getLogger().log(OpenAIAPIWrapper.class, LogLevel.WARN, "Error reading response from run.");
                 throw new RuntimeException(e);
             }
 
-            return body.get("id").asText();
+            String newRunID = body.get("id").asText();
+            bot.getLogger().log(OpenAIAPIWrapper.class, LogLevel.DEBUG, "Created Run: " + newRunID);
+
+            return newRunID;
         });
 
     }
@@ -156,7 +160,10 @@ public class OpenAIAPIWrapper {
             try { body = new ObjectMapper().readTree(bodyBytes); }
             catch (IOException e) { throw new RuntimeException(e); }
 
-            return body.get("data").get(0).get("content").get(0).get("text").get("value").asText();
+            String newResponse = body.get("data").get(0).get("content").get(0).get("text").get("value").asText();
+            bot.getLogger().log(OpenAIAPIWrapper.class, LogLevel.DEBUG, "Created New Response: " + newResponse);
+
+            return newResponse;
         });
     }
 
@@ -176,7 +183,10 @@ public class OpenAIAPIWrapper {
             try { body = new ObjectMapper().readTree(bodyBytes); }
             catch (IOException e) { throw new RuntimeException(e); }
 
-            return body.get("status").asText();
+            String newRunStatus = body.get("status").asText();
+            bot.getLogger().log(OpenAIAPIWrapper.class, LogLevel.DEBUG, "New AI Run Status: " + newRunStatus);
+
+            return newRunStatus;
         });
     }
 
@@ -219,8 +229,13 @@ public class OpenAIAPIWrapper {
                 // Run assistant on thread
                 .thenComposeAsync(
                         (threadID) -> {
-                            try { return this.createRun(guildID, channelID, threadID); }
-                            catch (URISyntaxException e) { throw new RuntimeException(e); }
+                            try {
+                                return this.createRun(guildID, channelID, threadID);
+                            }
+                            catch (URISyntaxException e) {
+                                bot.getLogger().log(OpenAIAPIWrapper.class, LogLevel.WARN, "Error running AI on thread.");
+                                throw new RuntimeException(e);
+                            }
                         }
                 )
 

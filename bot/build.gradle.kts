@@ -84,17 +84,17 @@ tasks.clean {
 dependencies {
     implementation(project(":wrappers:cafe-api-wrapper"))
 
-    implementation("net.dv8tion", "JDA", "5.0.1") { exclude(module = "opus-java") }
+    implementation("net.dv8tion", "JDA", "5.2.1") { exclude(module = "opus-java") }
 
-    implementation("org.apache.logging.log4j", "log4j-api", "2.23.1")
-    implementation("org.apache.logging.log4j", "log4j-core", "2.23.1")
-    implementation("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.23.1")  // JDA logging.
+    implementation("org.apache.logging.log4j", "log4j-api", "2.24.1")  // Logging - https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core
+    implementation("org.apache.logging.log4j", "log4j-core", "2.24.1")
+    implementation("org.apache.logging.log4j", "log4j-slf4j2-impl", "2.24.1")  // JDA logging.
 
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+    implementation("com.fasterxml.jackson.core", "jackson-databind", "2.18.1")  // JSON - https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core
 
-    implementation("org.apache.httpcomponents.client5:httpclient5:5.3.1")  // OpenAI HTTP Requests
+    implementation("org.apache.httpcomponents.client5", "httpclient5", "5.3.1")  // HTTP Requests (For OpenAI)
 
-    implementation("com.github.twitch4j", "twitch4j", "1.21.0")
+    implementation("com.github.twitch4j", "twitch4j", "1.23.0")  // Twitch - https://github.com/twitch4j/twitch4j
 
     compileOnly("org.projectlombok", "lombok", "1.18.32")
     annotationProcessor("org.projectlombok", "lombok", "1.18.32")

@@ -28,7 +28,7 @@ public class AIResponseListener extends ListenerAdapter {
         this.messageMap = new HashMap<>();
 
         previousMessageMap = new HashMap<>();
-        this.openAI = new OpenAIAPIWrapper(openAIAPIKey, openAIAssistantID, previousMessageMap);
+        this.openAI = new OpenAIAPIWrapper(cafeBot, openAIAPIKey, openAIAssistantID, previousMessageMap);
         this.openAI.setHeaders();
         refreshMaps();
     }
@@ -77,7 +77,7 @@ public class AIResponseListener extends ListenerAdapter {
         try {
             event.getChannel().sendTyping().queue();
 
-            cafeBot.getLogger().log(AIResponseListener.class, LogLevel.INFO, String.format("Running AI For User (%s) on Guild (%s): %s", event.getAuthor().getId(), event.getGuild().getId(), event.getMessage().getContentRaw()), false, false);
+            cafeBot.getLogger().log(AIResponseListener.class, LogLevel.INFO, String.format("Running AI For User (%s) on Guild (%s): %s", event.getAuthor().getId(), event.getGuild().getId(), event.getMessage().getContentRaw()), true, false);
             openAI.getResponse(event.getGuild().getId(), event.getChannel().getId())
                     .thenAcceptAsync((response) -> event.getMessage().reply(response).queue());
         } catch (URISyntaxException e) {

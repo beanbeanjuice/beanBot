@@ -125,13 +125,13 @@ public class CafeBot {
                 .setActivity(Activity.playing("The barista is starting..."))
                 .setStatus(OnlineStatus.IDLE)
                 .enableIntents(
-                        GatewayIntent.GUILD_EMOJIS_AND_STICKERS,
+                        GatewayIntent.GUILD_EXPRESSIONS,
                         GatewayIntent.GUILD_MEMBERS,
                         GatewayIntent.DIRECT_MESSAGES,
                         GatewayIntent.MESSAGE_CONTENT
                 )
-                .setMemberCachePolicy(MemberCachePolicy.ALL)  // ! - Needed for mutual guilds
-                .setChunkingFilter(ChunkingFilter.ALL)  // ! - Needed for mutual guilds
+                .setMemberCachePolicy(MemberCachePolicy.ALL)  // ! - Needed for mutual guilds  // TODO: REMOVE?
+                .setChunkingFilter(ChunkingFilter.ALL)  // ! - Needed for mutual guilds  // TODO: REMOVE?
                 .build();
 
         logger.log(CafeBot.class, LogLevel.INFO, "Checking servers...");
