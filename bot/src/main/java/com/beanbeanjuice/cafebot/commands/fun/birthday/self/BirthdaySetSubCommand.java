@@ -50,8 +50,6 @@ public class BirthdaySetSubCommand extends Command implements ISubCommand {
         updateUserBirthday(month, day, timeZone, event);
     }
 
-
-
     private void updateUserBirthday(final BirthdayMonth month, final int day, final TimeZone timeZone, final SlashCommandInteractionEvent event) {
         User user = event.getUser();
 

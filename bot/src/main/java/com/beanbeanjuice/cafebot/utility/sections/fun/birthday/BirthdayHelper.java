@@ -94,6 +94,10 @@ public class BirthdayHelper {
     private void handleGuildBirthday(final Guild guild, final String birthdayChannelID, final User user, final Birthday birthday) {
         TextChannel birthdayChannel = guild.getTextChannelById(birthdayChannelID);
         if (birthdayChannel == null) return;
+        if (!guild.isMember(user)) {
+            this.cafeBot.getCafeAPI().getMutualGuildsEndpoint().removeMutualGuild(user.getId(), guild.getId());
+            return;
+        };
 
         birthdayChannel.sendMessage("It's someone's birthday! 🥳").addEmbeds(birthdayEmbed(user, birthday)).queue();
     }
