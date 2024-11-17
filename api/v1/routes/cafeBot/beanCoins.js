@@ -48,7 +48,7 @@ router.get("/beanCoin/donation_users/:user_id", check_authentication, check_admi
 
         response.status(200).json({
             message: `Successfully retrieved time until next donation for user (${user_id}).`,
-            time_until_next_donation: rows[0]
+            time_until_next_donation: rows[0].time_until_next_donation
         });
     });
 });
