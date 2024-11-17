@@ -165,15 +165,16 @@ router.patch("/birthdays/:user_id/mention", check_authentication, check_admin, c
 // TODO: Test this.
 // Creates a birthday
 router.post("/birthdays/:user_id", check_authentication, check_admin, check_if_user_does_not_exist, (request, response, next) => {
-    user_id = request.params.user_id;
-    birthday = request.query.birthday;
-    time_zone = request.query.time_zone;
+    const user_id = request.params.user_id;
+    const birthday = request.query.birthday;
+    const time_zone = request.query.time_zone;
 
-    if (!birthday) {
+    if (!birthday || !time_zone) {
         response.status(400).json({
             variables: {
                 user_id: user_id,
-                birthday: birthday || "undefined"
+                birthday: birthday || "undefined",
+                time_zone: time_zone || "undefined"
             },
             message: "A Variable is Undefined"
         });
