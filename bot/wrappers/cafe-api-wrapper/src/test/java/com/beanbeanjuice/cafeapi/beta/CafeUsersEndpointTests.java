@@ -8,23 +8,31 @@ import com.beanbeanjuice.cafeapi.wrapper.exception.api.NotFoundException;
 import com.beanbeanjuice.cafeapi.wrapper.exception.api.TeaPotException;
 import com.beanbeanjuice.cafeapi.wrapper.generic.CafeGeneric;
 import com.beanbeanjuice.cafeapi.wrapper.requests.RequestLocation;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.sql.Timestamp;
 import java.util.concurrent.ExecutionException;
 
 public class CafeUsersEndpointTests {
 
-    @Test
-    @DisplayName("Cafe Users Endpoint Test")
-    public void testCafeUsersEndpoint() throws ExecutionException, InterruptedException {
-        CafeAPI cafeAPI = new CafeAPI("beanbeanjuice", System.getenv("API_PASSWORD"), RequestLocation.BETA);
+    private static CafeAPI cafeAPI;
 
+    @BeforeAll
+    @DisplayName("Login to CafeAPI")
+    public static void login() {
+        cafeAPI = new CafeAPI("beanbeanjuice", System.getenv("API_PASSWORD"), RequestLocation.BETA);
+    }
+
+    @BeforeEach
+    @DisplayName("Delete User")
+    public void deleteUser() throws ExecutionException, InterruptedException {
         // Makes sure the user does not exist beforehand.
         Assertions.assertTrue(cafeAPI.getCafeUsersEndpoint().deleteCafeUser("236654580300120064").get());
+    }
 
+    @Test
+    @DisplayName("Make Sure User Does Not Exist")
+    public void confirmUserAbsence() {
         // Makes sure the user does not exist when trying to get it.
         try {
             cafeAPI.getCafeUsersEndpoint().getCafeUser("236654580300120064").get();
@@ -32,9 +40,19 @@ public class CafeUsersEndpointTests {
         } catch (Exception e) {
             Assertions.assertInstanceOf(NotFoundException.class, e.getCause());
         }
+    }
 
+    @Test
+    @DisplayName("Make Sure User Can Be Created")
+    public void createUser() throws ExecutionException, InterruptedException {
         // Creates the user.
         Assertions.assertTrue(cafeAPI.getCafeUsersEndpoint().createCafeUser("236654580300120064").get());
+    }
+
+    @Test
+    @DisplayName("Test Duplicate User Fail")
+    public void testDuplicateUserFail() throws ExecutionException, InterruptedException {
+        createUser();
 
         // Makes sure the user cannot be created twice.
         try {
@@ -43,6 +61,12 @@ public class CafeUsersEndpointTests {
         } catch (Exception e) {
             Assertions.assertInstanceOf(ConflictException.class, e.getCause());
         }
+    }
+
+    @Test
+    @DisplayName("Cafe Users Endpoint Test")
+    public void testCafeUsersEndpoint() throws ExecutionException, InterruptedException {
+        createUser();
 
         // Makes sure the user exists in the array list.
         Assertions.assertTrue(() -> {

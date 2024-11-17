@@ -6,7 +6,6 @@ import com.beanbeanjuice.cafeapi.wrapper.utility.Time;
 import lombok.Getter;
 
 import java.text.ParseException;
-import java.time.Month;
 import java.time.Year;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,9 +23,8 @@ public class Birthday {
     @Getter private final BirthdayMonth month;
     @Getter private final int day;
     @Getter private final TimeZone timeZone;
-    @Getter private final boolean isAlreadyMentioned;
 
-    public Birthday(final BirthdayMonth month, final int day, final String timeZone, final boolean isAlreadyMentioned) {
+    public Birthday(final BirthdayMonth month, final int day, final String timeZone) {
         this.month = month;
         this.day = day;
 
@@ -40,7 +38,6 @@ public class Birthday {
             throw new InvalidTimeZoneException("The timezone specified is not allowed!");
 
         this.timeZone = TimeZone.getTimeZone(timeZone);
-        this.isAlreadyMentioned = isAlreadyMentioned;
     }
 
     public Date getDate() throws ParseException {
@@ -64,7 +61,7 @@ public class Birthday {
         }
     }
 
-    public static String convertToBirthdayDateString(final BirthdayMonth month, final int day, final int year) {
+    private static String convertToBirthdayDateString(final BirthdayMonth month, final int day, final int year) {
         return String.format("%s-%s-%d", month.getMonthNumber(), day, year);
     }
 

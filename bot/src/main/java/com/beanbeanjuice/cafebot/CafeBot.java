@@ -56,8 +56,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
-import net.dv8tion.jda.api.utils.ChunkingFilter;
-import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.apache.hc.client5.http.async.methods.SimpleHttpRequest;
 import org.apache.hc.client5.http.impl.async.CloseableHttpAsyncClient;
 import org.apache.hc.client5.http.impl.async.HttpAsyncClients;
@@ -130,8 +128,8 @@ public class CafeBot {
                         GatewayIntent.DIRECT_MESSAGES,
                         GatewayIntent.MESSAGE_CONTENT
                 )
-                .setMemberCachePolicy(MemberCachePolicy.ALL)  // ! - Needed for mutual guilds  // TODO: REMOVE?
-                .setChunkingFilter(ChunkingFilter.ALL)  // ! - Needed for mutual guilds  // TODO: REMOVE?
+//                .setMemberCachePolicy(MemberCachePolicy.ALL)  // ! - Needed for mutual guilds  // TODO: REMOVE?
+//                .setChunkingFilter(ChunkingFilter.ALL)  // ! - Needed for mutual guilds  // TODO: REMOVE?
                 .build();
 
         logger.log(CafeBot.class, LogLevel.INFO, "Checking servers...");
@@ -331,7 +329,9 @@ public class CafeBot {
                 new GoodbyeListener(this),
 
                 new WelcomeMessageModalListener(this.cafeAPI.getWelcomesEndpoint()),
-                new GoodbyeMessageModalListener(this.cafeAPI.getGoodbyesEndpoint())
+                new GoodbyeMessageModalListener(this.cafeAPI.getGoodbyesEndpoint()),
+
+                new MutualGuildsListener(this.cafeAPI.getMutualGuildsEndpoint())
         );
     }
 
@@ -371,19 +371,21 @@ public class CafeBot {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                int num = Helper.getRandomInteger(1, 4);
+                int num = Helper.getRandomInteger(1, 4);  // (Inclusive, Exclusive)
                 String finalString = "";
 
                 switch (num) {
                     case 1 -> finalString = "Currently in " + getTotalServers() + " cafés!";
                     case 2 -> finalString = "Waiting " + getTotalChannels() + " tables!";
                     case 3 -> finalString = "Serving " + getTotalUsers() + " customers!";
+                    case 4 -> finalString = "Hmmm... I really want to go on break but my boss will get angry...";
+                    case 5 -> finalString = "Wow... I had to deal with " + commandsRun + " orders today...";
                 }
 
                 bot.getShardManager().setActivity(Activity.customStatus(initialString + finalString));
             }
         };
-        timer.scheduleAtFixedRate(timerTask, 0, TimeUnit.MINUTES.toMillis(1));
+        timer.scheduleAtFixedRate(timerTask, 0, TimeUnit.MINUTES.toMillis(10));
     }
 
     public MessageEmbed getUpdateEmbed(final double gatewayPing) {

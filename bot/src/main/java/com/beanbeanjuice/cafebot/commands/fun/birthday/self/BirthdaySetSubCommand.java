@@ -55,7 +55,7 @@ public class BirthdaySetSubCommand extends Command implements ISubCommand {
     private void updateUserBirthday(final BirthdayMonth month, final int day, final TimeZone timeZone, final SlashCommandInteractionEvent event) {
         User user = event.getUser();
 
-        Birthday birthday = new Birthday(month, day, timeZone.getID(), false);
+        Birthday birthday = new Birthday(month, day, timeZone.getID());
         BirthdaysEndpoint birthdaysEndpoint = cafeBot.getCafeAPI().getBirthdaysEndpoint();
 
         birthdaysEndpoint.createUserBirthday(user.getId(), birthday)

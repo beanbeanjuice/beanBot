@@ -24,6 +24,7 @@ import com.beanbeanjuice.cafeapi.wrapper.endpoints.welcomes.WelcomesEndpoint;
 import com.beanbeanjuice.cafeapi.wrapper.endpoints.words.WordsEndpoint;
 import lombok.Getter;
 
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +67,6 @@ public class CafeAPI {
      * @param requestLocation The {@link RequestLocation requestLocation}.
      */
     public CafeAPI(String username, String password, RequestLocation requestLocation) {
-//        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
         this.userAgent = username;
         CafeAPI.requestLocation = requestLocation;
 

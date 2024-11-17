@@ -43,7 +43,7 @@ public class DonationUsersEndpoint extends CafeEndpoint {
                 .setRoute("/beanCoin/donation_users/" + userID)
                 .setAuthorization(apiKey)
                 .buildAsync()
-                .thenApplyAsync((request) -> CafeGeneric.parseTimestampFromAPI(request.getData().get("user").get("time_until_next_donation").asText()));
+                .thenApplyAsync((request) -> CafeGeneric.parseTimestampFromAPI(request.getData().get("time_until_next_donation").asText()));
     }
 
     public CompletableFuture<Boolean> addDonationUser(final String userID, final Timestamp timeUntilNextDonation) {

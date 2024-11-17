@@ -69,13 +69,25 @@ public class BirthdayHelper {
                 ).queue();
             });
 
-            user.getMutualGuilds().forEach((guild) -> {
-                this.cafeBot.getLogger().log(BirthdayHelper.class, LogLevel.INFO, String.format("Sending Birthday To Guild: %s", guild.getId()), true, false);
+            this.cafeBot.getCafeAPI()
+                    .getMutualGuildsEndpoint()
+                    .getMutualGuilds(user.getId())
+                    .thenAccept((mutualGuildIDs) -> sendBirthdayMessageToEveryServer(mutualGuildIDs, user, birthday));
+        });
+    }
 
-                cafeBot.getCafeAPI().getGuildsEndpoint().getGuildInformation(guild.getId()).thenAcceptAsync((guildInformation) -> {
-                    handleGuildBirthday(guild, guildInformation.getSetting(GuildInformationType.BIRTHDAY_CHANNEL_ID), user, birthday);
-                });
-            });
+    private void sendBirthdayMessageToEveryServer(final List<String> guildIDs, final User user, final Birthday birthday) {
+        guildIDs.forEach((guildID) -> {
+            Optional<Guild> guildOptional = Optional.ofNullable(cafeBot.getShardManager().getGuildById(guildID));
+            if (guildOptional.isEmpty()) return;
+
+            Guild guild = guildOptional.get();
+
+            this.cafeBot.getLogger().log(BirthdayHelper.class, LogLevel.INFO, String.format("Sending Birthday To Guild: %s", guild.getId()), true, false);
+            this.cafeBot.getCafeAPI()
+                    .getGuildsEndpoint()
+                    .getGuildInformation(guild.getId())
+                    .thenAcceptAsync((guildInformation) -> handleGuildBirthday(guild, guildInformation.getSetting(GuildInformationType.BIRTHDAY_CHANNEL_ID), user, birthday));
         });
     }
 

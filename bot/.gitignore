@@ -2,6 +2,9 @@
 ai.json
 menu.json
 
+# IntelliJ
+./.idea/
+
 # Compiled class file
 *.class
 

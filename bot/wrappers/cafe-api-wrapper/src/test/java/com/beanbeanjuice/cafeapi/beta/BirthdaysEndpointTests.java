@@ -7,10 +7,9 @@ import com.beanbeanjuice.cafeapi.wrapper.exception.api.ConflictException;
 import com.beanbeanjuice.cafeapi.wrapper.exception.api.NotFoundException;
 import com.beanbeanjuice.cafeapi.wrapper.exception.api.TeaPotException;
 import com.beanbeanjuice.cafeapi.wrapper.exception.program.BirthdayOverfillException;
+import com.beanbeanjuice.cafeapi.wrapper.exception.program.InvalidTimeZoneException;
 import com.beanbeanjuice.cafeapi.wrapper.requests.RequestLocation;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.util.Optional;
 import java.util.TimeZone;
@@ -18,126 +17,99 @@ import java.util.concurrent.ExecutionException;
 
 public class BirthdaysEndpointTests {
 
-    @Test
-    @DisplayName("Birthdays Endpoint Test")
-    public void testBirthdaysEndpoint() throws ExecutionException, InterruptedException {
-        CafeAPI cafeAPI = new CafeAPI("beanbeanjuice", System.getenv("API_PASSWORD"), RequestLocation.BETA);
+    private static CafeAPI cafeAPI;
 
-        // Makes sure the user's birthday doesn't exist before starting.
+    @BeforeAll
+    @DisplayName("Login to CafeAPI")
+    public static void login() {
+        cafeAPI = new CafeAPI("beanbeanjuice", System.getenv("API_PASSWORD"), RequestLocation.BETA);
+    }
+
+    @BeforeEach
+    public void deleteUserBirthday() throws ExecutionException, InterruptedException {
         Assertions.assertTrue(cafeAPI.getBirthdaysEndpoint().removeUserBirthday("178272524533104642").get());
+    }
 
-        // Makes sure the user's birthday cannot be found.
+    @Test
+    @DisplayName("Make Sure User Birthday Does Not Already Exist")
+    public void testIfBirthdayDoesNotExist() {
         try {
             cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
             Assertions.fail();
         } catch (Exception e) {
             Assertions.assertInstanceOf(NotFoundException.class, e.getCause());
         }
+    }
 
-        // Makes sure the user's birthday can be created.
-        Assertions.assertTrue(cafeAPI.getBirthdaysEndpoint().createUserBirthday("178272524533104642", new Birthday(BirthdayMonth.DECEMBER, 31, "EST", false)).get());
+    @Test
+    @DisplayName("Test Birthday Creation")
+    public void testBirthdayCreation() throws ExecutionException, InterruptedException {
+        Assertions.assertTrue(cafeAPI.getBirthdaysEndpoint().createUserBirthday("178272524533104642", new Birthday(BirthdayMonth.DECEMBER, 31, "EST")).get());
+    }
 
-        // Makes sure the user's birthday cannot be duplicated.
+    @Test
+    @DisplayName("Test Birthday Duplication")
+    public void testBirthdayDuplication() throws ExecutionException, InterruptedException {
+        testBirthdayCreation();
+
         try {
-            cafeAPI.getBirthdaysEndpoint().createUserBirthday("178272524533104642", new Birthday(BirthdayMonth.DECEMBER, 20, "EST", false)).get();
+            cafeAPI.getBirthdaysEndpoint().createUserBirthday("178272524533104642", new Birthday(BirthdayMonth.DECEMBER, 20, "EST")).get();
             Assertions.fail();
         } catch (Exception e) {
             Assertions.assertInstanceOf(ConflictException.class, e.getCause());
         }
+    }
 
-        // Makes sure the month is the same.
-        Assertions.assertEquals(BirthdayMonth.DECEMBER, cafeAPI.getBirthdaysEndpoint().getAllBirthdays().get().get("178272524533104642").getMonth());
+    @Test
+    @DisplayName("Make Sure Created Birthday Matches Expected Value")
+    public void testExpectedValue() throws ExecutionException, InterruptedException {
+        testBirthdayCreation();
 
-        // Makes sure the date is the same.
-        Assertions.assertTrue(() -> {
-            Optional<Birthday> optionalBirthday = null;
-            try {
-                optionalBirthday = cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
-            } catch (Exception e) {
-                Assertions.fail();
-            }
-            Assertions.assertNotNull(optionalBirthday);
-            Assertions.assertTrue(optionalBirthday.isPresent());
-            return optionalBirthday.get().getDay() == 31;
-        });
+        Optional<Birthday> optionalBirthday = cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
 
-        // Makes sure a TeaPotException is thrown when there are more days than in the month.
-        Assertions.assertThrows(BirthdayOverfillException.class, () -> cafeAPI.getBirthdaysEndpoint().updateUserBirthday("178272524533104642", new Birthday(BirthdayMonth.FEBRUARY, 30, "EST", false)).get());
+        Assertions.assertTrue(optionalBirthday.isPresent());
+        Birthday birthday = optionalBirthday.get();
 
-        // Makes sure only a valid month can be set
-        Assertions.assertThrows(TeaPotException.class, () -> cafeAPI.getBirthdaysEndpoint().updateUserBirthday("178272524533104642", new Birthday(BirthdayMonth.ERROR, 15, "EST", false)).get());
+        Assertions.assertEquals(birthday.getMonth(), BirthdayMonth.DECEMBER);
+        Assertions.assertEquals(birthday.getDay(), 31);
+        Assertions.assertEquals(birthday.getTimeZone(), TimeZone.getTimeZone("EST"));
+    }
+
+    @Test
+    @DisplayName("Invalid Parameters Test")
+    public void testInvalidParameters() throws ExecutionException, InterruptedException {
+        // Makes sure the proper exception is thrown when there are more days than in the month.
+        Assertions.assertThrows(BirthdayOverfillException.class, () -> cafeAPI.getBirthdaysEndpoint().updateUserBirthday("178272524533104642", new Birthday(BirthdayMonth.FEBRUARY, 30, "EST")).get());
+
+        // Makes sure the proper exception is thrown when the incorrect month is set.
+        Assertions.assertThrows(TeaPotException.class, () -> cafeAPI.getBirthdaysEndpoint().updateUserBirthday("178272524533104642", new Birthday(BirthdayMonth.ERROR, 15, "EST")).get());
+
+        // Makes sure the proper exception is thrown when the incorrect timezone is set.
+        Assertions.assertThrows(InvalidTimeZoneException.class, () -> cafeAPI.getBirthdaysEndpoint().updateUserBirthday("178272524533104642", new Birthday(BirthdayMonth.FEBRUARY, 15, "BURGER")).get());
+    }
+
+    @Test
+    @DisplayName("Confirm Birthday Can Change")
+    public void testBirthdayChange() throws ExecutionException, InterruptedException {
+        testBirthdayCreation();
 
         // Makes sure the birthday can be changed.
-        Assertions.assertTrue(cafeAPI.getBirthdaysEndpoint().updateUserBirthday("178272524533104642", new Birthday(BirthdayMonth.FEBRUARY, 29, "UTC", false)).get());
+        Assertions.assertTrue(cafeAPI.getBirthdaysEndpoint().updateUserBirthday("178272524533104642", new Birthday(BirthdayMonth.FEBRUARY, 29, "UTC")).get());
+    }
 
-        // Makes sure the changed month is the same.
-        Assertions.assertTrue(() -> {
-            Optional<Birthday> optionalBirthday = null;
-            try {
-                optionalBirthday = cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
-            } catch (Exception e) {
-                Assertions.fail();
-            }
-            Assertions.assertNotNull(optionalBirthday);
-            Assertions.assertTrue(optionalBirthday.isPresent());
-            return optionalBirthday.get().getMonth() == BirthdayMonth.FEBRUARY;
-        });
+    @Test
+    @DisplayName("Confirm Changed Expected Values")
+    public void confirmChangedValues() throws ExecutionException, InterruptedException {
+        testBirthdayChange();
 
-        // Makes sure the changed day is the same.
-        {
-            TimeZone oldTimeZone = TimeZone.getDefault();
-            TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-            Optional<Birthday> optionalBirthday = null;
-            try {
-                optionalBirthday = cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
-            } catch (Exception e) {
-                Assertions.fail();
-            }
-            Assertions.assertNotNull(optionalBirthday);
-            Assertions.assertTrue(optionalBirthday.isPresent());
-            Assertions.assertEquals(optionalBirthday.get().getDay(), 29);
-            TimeZone.setDefault(oldTimeZone);
-        }
+        Optional<Birthday> optionalBirthday = cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
 
-        // Makes sure that alreadyMentioned is false by default.
-        Assertions.assertFalse(() -> {
-            Optional<Birthday> optionalBirthday = null;
-            try {
-                optionalBirthday = cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
-            } catch (Exception e) {
-                Assertions.fail();
-            }
-            Assertions.assertNotNull(optionalBirthday);
-            Assertions.assertTrue(optionalBirthday.isPresent());
-            return optionalBirthday.get().isAlreadyMentioned();
-        });
+        Assertions.assertTrue(optionalBirthday.isPresent());
+        Birthday birthday = optionalBirthday.get();
 
-        // Makes sure alreadyMentioned can be updated.
-        Assertions.assertTrue(cafeAPI.getBirthdaysEndpoint().updateUserBirthdayMention("178272524533104642", true).get());
-
-        // Makes sure alreadyMentioned HAS updated.
-        Assertions.assertTrue(() -> {
-            Optional<Birthday> optionalBirthday = null;
-            try {
-                optionalBirthday = cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
-            } catch (Exception e) {
-                Assertions.fail();
-            }
-            Assertions.assertNotNull(optionalBirthday);
-            Assertions.assertTrue(optionalBirthday.isPresent());
-            return optionalBirthday.get().isAlreadyMentioned();
-        });
-
-        // Makes sure the user's birthday can be removed.
-        Assertions.assertTrue(cafeAPI.getBirthdaysEndpoint().removeUserBirthday("178272524533104642").get());
-
-        // Makes sure the user no longer exists.
-        try {
-            cafeAPI.getBirthdaysEndpoint().getUserBirthday("178272524533104642").get();
-            Assertions.fail();
-        } catch (Exception e) {
-            Assertions.assertInstanceOf(NotFoundException.class, e.getCause());
-        }
+        Assertions.assertEquals(birthday.getMonth(), BirthdayMonth.FEBRUARY);
+        Assertions.assertEquals(birthday.getDay(), 29);
+        Assertions.assertEquals(birthday.getTimeZone(), TimeZone.getTimeZone("UTC"));
     }
 
 }

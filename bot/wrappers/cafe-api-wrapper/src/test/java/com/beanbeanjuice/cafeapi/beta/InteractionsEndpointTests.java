@@ -18,7 +18,7 @@ public class InteractionsEndpointTests {
     public void testInteractionSendersEndpoint() throws ExecutionException, InterruptedException {
         CafeAPI cafeAPI = new CafeAPI("beanbeanjuice", System.getenv("API_PASSWORD"), RequestLocation.BETA);
 
-        // Makes sure to delete the user before-hand.
+        // Makes sure to delete the user beforehand.
         Assertions.assertTrue(cafeAPI.getInteractionsEndpoint().deleteUserInteractionsSent("879761226761109544").get());
 
         // Makes sure that a NotFoundException is thrown when trying to get the user.
